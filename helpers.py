@@ -466,14 +466,14 @@ def get_speaker_aware_transcript(sentences_speaker_mapping, f):
 
     for sentence_dict in sentences_speaker_mapping:
         speaker = sentence_dict["speaker"]
-        sentence = sentence_dict["text"]
+        sentence = sentence_dict["text"].strip()
 
         # If this speaker doesn't match the previous one, start a new paragraph
         if speaker != previous_speaker:
             f.write(f"\n\n{speaker}: ")
             previous_speaker = speaker
 
-        # No matter what, write the current sentence
+        # Write the current sentence with a single space after
         f.write(sentence + " ")
 
 
