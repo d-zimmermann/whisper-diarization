@@ -87,6 +87,14 @@ parser.add_argument(
     help="if you have a GPU use 'cuda', otherwise 'cpu'",
 )
 
+parser.add_argument(
+    "--chunk-size",
+    type=int,
+    dest="chunk_size",
+    default=230,
+    help="Chunk size for punctuation model prediction",
+)
+
 args = parser.parse_args()
 language = process_language_arg(args.language, args.model_name)
 
@@ -215,7 +223,7 @@ if info.language in punct_model_langs:
 
     words_list = list(map(lambda x: x["word"], wsm))
 
-    labled_words = punct_model.predict(words_list, chunk_size=230)
+    labled_words = punct_model.predict(words_list, chunk_size=args.chunk_size)
 
     ending_puncts = ".?!"
     model_puncts = ".,;:!?"
