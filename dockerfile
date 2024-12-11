@@ -9,16 +9,8 @@ ENV VIRTUAL_ENV=/app/venv
 WORKDIR /app
 
 # Install system dependencies
-RUN apt-get update
+RUN apt-get update -y
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -y \
-    build-essential \
-    libssl-dev \
-    libffi-dev \
-    libncurses5-dev \
-    zlib1g-dev \
-    libreadline-dev \
-    libbz2-dev \
-    libsqlite3-dev \
     cython3 \
     sox \
     wget \
@@ -45,7 +37,7 @@ RUN pip install --no-cache-dir numpy typing_extensions
 RUN pip install --no-cache-dir -c constraints.txt -r requirements.txt
 
 # Copy the application code
-COPY . .
+COPY nemo_msdd_configs *.py .
 
 # Make diarize.py executable
 RUN chmod +x diarize.py
