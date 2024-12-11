@@ -460,21 +460,45 @@ def get_sentences_speaker_mapping(word_speaker_mapping, spk_ts):
     return snts
 
 
-def get_speaker_aware_transcript(sentences_speaker_mapping, f):
-    previous_speaker = sentences_speaker_mapping[0]["speaker"]
-    f.write(f"{previous_speaker}: ")
-
+def get_speaker_aware_transcript(sentences_speaker_mapping, f, words_data):
+    output_data = {
+        "segments": []
+    }
+    
+    word_index = 0
+    
     for sentence_dict in sentences_speaker_mapping:
         speaker = sentence_dict["speaker"]
         sentence = sentence_dict["text"].strip()
-
-        # If this speaker doesn't match the previous one, start a new paragraph
-        if speaker != previous_speaker:
-            f.write(f"\n\n{speaker}: ")
-            previous_speaker = speaker
-
-        # Write the current sentence with a single space after
-        f.write(sentence + " ")
+        start_time = sentence_dict.get("start_time", 0)
+        end_time = sentence_dict.get("end_time", 0)
+        
+        # Find words that make up this segment's text
+        relevant_words = []
+        sentence_words = [w for w in sentence.split() if w.strip()]  # Split sentence into words
+        words_to_match = len(sentence_words)
+        
+        # Match the next N words from words_data
+        for _ in range(words_to_match):
+            if word_index < len(words_data):
+                word_data = words_data[word_index]
+                relevant_words.append({
+                    "word": word_data["word"].strip(),  # Strip the word
+                    "probability": word_data["probability"]
+                })
+                word_index += 1
+        
+        # Add segment data
+        segment_data = {
+            "speaker": speaker,
+            "text": sentence,
+            "words": relevant_words
+        }
+        
+        output_data["segments"].append(segment_data)
+    
+    # Write the JSON to file
+    json.dump(output_data, f, indent=2, ensure_ascii=False)
 
 
 def format_timestamp(

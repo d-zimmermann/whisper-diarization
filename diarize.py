@@ -2,6 +2,7 @@ import argparse
 import logging
 import os
 import re
+import json
 
 import faster_whisper
 import torch
@@ -143,6 +144,7 @@ if args.batch_size > 0:
         language,
         suppress_tokens=suppress_tokens,
         batch_size=args.batch_size,
+        word_timestamps=True,
     )
 else:
     transcript_segments, info = whisper_model.transcribe(
@@ -150,9 +152,24 @@ else:
         language,
         suppress_tokens=suppress_tokens,
         vad_filter=True,
+        word_timestamps=True,
     )
 
-full_transcript = "".join(segment.text for segment in transcript_segments)
+#full_transcript = "".join(segment.text for segment in transcript_segments)
+full_transcript = ""
+
+# Add this code block after transcription but before clearing GPU VRAM
+words_data = []
+for segment in transcript_segments:
+    for word in segment.words:
+        word_data = {
+            "word": word.word,
+            "start": word.start,
+            "end": word.end,
+            "probability": word.probability
+        }
+        words_data.append(word_data)
+    full_transcript += segment.text
 
 # clear gpu vram
 del whisper_model, whisper_pipeline
@@ -260,8 +277,8 @@ else:
 wsm = get_realigned_ws_mapping_with_punctuation(wsm)
 ssm = get_sentences_speaker_mapping(wsm, speaker_ts)
 
-with open(f"{os.path.splitext(args.audio)[0]}.txt", "w", encoding="utf-8-sig") as f:
-    get_speaker_aware_transcript(ssm, f)
+with open(f"{os.path.splitext(args.audio)[0]}.json", "w", encoding="utf-8-sig") as f:
+    get_speaker_aware_transcript(ssm, f, words_data)
 
 with open(f"{os.path.splitext(args.audio)[0]}.srt", "w", encoding="utf-8-sig") as srt:
     write_srt(ssm, srt)
