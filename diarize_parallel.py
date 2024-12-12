@@ -95,6 +95,14 @@ parser.add_argument(
     help="Chunk size for punctuation model prediction",
 )
 
+parser.add_argument(
+    "--speakers",
+    type=int,
+    dest="speakers",
+    default=0,
+    help="Number of expected speakers in the audio file",
+)
+
 args = parser.parse_args()
 language = process_language_arg(args.language, args.model_name)
 

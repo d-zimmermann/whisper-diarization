@@ -98,6 +98,14 @@ parser.add_argument(
     help="Chunk size for punctuation model prediction",
 )
 
+parser.add_argument(
+    "--speakers",
+    type=int,
+    dest="speakers",
+    default=0,
+    help="Number of expected speakers in the audio file",
+)
+
 args = parser.parse_args()
 language = process_language_arg(args.language, args.model_name)
 
@@ -222,7 +230,7 @@ torchaudio.save(
 
 
 # Initialize NeMo MSDD diarization model
-msdd_model = NeuralDiarizer(cfg=create_config(temp_path)).to(args.device)
+msdd_model = NeuralDiarizer(cfg=create_config(temp_path, args)).to(args.device)
 msdd_model.diarize()
 
 del msdd_model
